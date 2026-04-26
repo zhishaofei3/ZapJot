@@ -367,10 +367,15 @@ async function deleteNote(noteId) {
       await chrome.storage.local.set({ activeTabId: activeTabId });
     } else {
       // No notes in current category, switch to first available note in any category
-      const allNotes = Object.keys(notes);
+      const allNotes = Object.entries(notes);
       if (allNotes.length > 0) {
-        activeTabId = allNotes[0];
-        await chrome.storage.local.set({ activeTabId: activeTabId });
+        activeTabId = allNotes[0][0];
+        // Update selected category to match the new active note
+        selectedCategory = notes[activeTabId].category;
+        await chrome.storage.local.set({ 
+          activeTabId: activeTabId,
+          selectedCategory: selectedCategory 
+        });
       } else {
         // No notes left at all, create a new default note
         await addTab();
