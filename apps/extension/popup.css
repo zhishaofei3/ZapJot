@@ -114,21 +114,21 @@ body {
 }
 
 .btn-insert-url {
-  background: linear-gradient(to bottom, #28a745, #218838);
+  background: linear-gradient(to bottom, #17a2b8, #138496);
   color: #fff;
 }
 
 .btn-insert-url:hover {
-  background: linear-gradient(to bottom, #218838, #1e7e34);
+  background: linear-gradient(to bottom, #138496, #117a8b);
 }
 
 .btn-insert-date {
-  background: linear-gradient(to bottom, #28a745, #218838);
+  background: linear-gradient(to bottom, #17a2b8, #138496);
   color: #fff;
 }
 
 .btn-insert-date:hover {
-  background: linear-gradient(to bottom, #218838, #1e7e34);
+  background: linear-gradient(to bottom, #138496, #117a8b);
 }
 
 .btn-tab-action:active {
