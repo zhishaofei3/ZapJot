@@ -1157,6 +1157,7 @@ async function addCategory() {
   
   renderCategoryList();
   renderNoteAssignment();
+  renderTabs(); // Update main interface tabs
 }
 
 async function deleteCategory(catId) {
