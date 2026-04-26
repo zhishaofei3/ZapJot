@@ -448,11 +448,6 @@ body {
         justify-content: center;
     }
 
-    /* Hide navigation links on tablet and smaller screens */
-    .nav-links {
-        display: none;
-    }
-
     .section-title {
         font-size: 2rem;
     }
@@ -470,6 +465,13 @@ body {
     .download-info {
         flex-direction: column;
         gap: 1rem;
+    }
+}
+
+@media (max-width: 600px) {
+    /* Hide navigation links at 600px */
+    .nav-links {
+        display: none;
     }
 }
 
