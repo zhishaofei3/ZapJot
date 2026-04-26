@@ -332,8 +332,12 @@ function confirmDeleteNote() {
 }
 
 async function deleteNote(noteId) {
-  if (Object.keys(notes).length <= 1) {
-    alert('Cannot delete the last note. At least one note must remain.');
+  // Check if this is the last note in the current category
+  const categoryNotes = Object.entries(notes)
+    .filter(([id, note]) => note.category === selectedCategory);
+  
+  if (categoryNotes.length <= 1) {
+    alert('Cannot delete the last note in this category. At least one note must remain in each category.');
     return;
   }
   
@@ -342,16 +346,19 @@ async function deleteNote(noteId) {
   
   // If we deleted the active tab, switch to another note in the same category
   if (activeTabId === noteId) {
-    const categoryNotes = Object.entries(notes)
+    const remainingNotes = Object.entries(notes)
       .filter(([id, note]) => note.category === selectedCategory)
       .sort((a, b) => {
+        const orderA = a[1].order !== undefined ? a[1].order : 999;
+        const orderB = b[1].order !== undefined ? b[1].order : 999;
+        if (orderA !== orderB) return orderA - orderB;
         const numA = parseInt(a[0]) || 0;
         const numB = parseInt(b[0]) || 0;
         return numA - numB;
       });
     
-    if (categoryNotes.length > 0) {
-      activeTabId = categoryNotes[0][0];
+    if (remainingNotes.length > 0) {
+      activeTabId = remainingNotes[0][0];
       await chrome.storage.local.set({ activeTabId: activeTabId });
     } else {
       // No notes in current category, switch to first available
