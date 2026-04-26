@@ -328,19 +328,14 @@ function confirmDeleteNote() {
 }
 
 async function deleteNote(noteId) {
-  // Check if this is the last note in the current category
-  const categoryNotes = Object.entries(notes)
+  // Get notes in current category before deletion
+  const categoryNotesBefore = Object.entries(notes)
     .filter(([id, note]) => note.category === selectedCategory);
-  
-  if (categoryNotes.length <= 1) {
-    alert('Cannot delete the last note in this category. At least one note must remain in each category.');
-    return;
-  }
   
   delete notes[noteId];
   await saveNotes();
   
-  // If we deleted the active tab, switch to another note in the same category
+  // If we deleted the active tab, switch to another note
   if (activeTabId === noteId) {
     const remainingNotes = Object.entries(notes)
       .filter(([id, note]) => note.category === selectedCategory)
@@ -355,7 +350,7 @@ async function deleteNote(noteId) {
     
     if (remainingNotes.length > 0) {
       // Find the index of the deleted note in the sorted list
-      const deletedIndex = categoryNotes.findIndex(([id]) => id === noteId);
+      const deletedIndex = categoryNotesBefore.findIndex(([id]) => id === noteId);
       
       // If deleted note was the last one, select the new last note
       // Otherwise, select the note at the same position (which shifts down)
@@ -371,9 +366,16 @@ async function deleteNote(noteId) {
       activeTabId = remainingNotes[newIndex][0];
       await chrome.storage.local.set({ activeTabId: activeTabId });
     } else {
-      // No notes in current category, switch to first available
-      activeTabId = Object.keys(notes)[0];
-      await chrome.storage.local.set({ activeTabId: activeTabId });
+      // No notes in current category, switch to first available note in any category
+      const allNotes = Object.keys(notes);
+      if (allNotes.length > 0) {
+        activeTabId = allNotes[0];
+        await chrome.storage.local.set({ activeTabId: activeTabId });
+      } else {
+        // No notes left at all, create a new default note
+        await addTab();
+        return; // addTab already handles rendering
+      }
     }
   }
   
