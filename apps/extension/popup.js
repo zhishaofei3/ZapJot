@@ -925,6 +925,9 @@ function openSettingsModal() {
   loadCurrentWindowSize();
   loadCurrentTheme();
   loadCurrentFontSize();
+  
+  // Add ESC key listener
+  document.addEventListener('keydown', handleSettingsEscapeKey);
 }
 
 // Load and update theme UI state
@@ -1037,6 +1040,15 @@ async function loadCurrentWindowSize() {
 
 function closeSettingsModal() {
   settingsModal.classList.remove('show');
+  
+  // Remove ESC key listener
+  document.removeEventListener('keydown', handleSettingsEscapeKey);
+}
+
+function handleSettingsEscapeKey(e) {
+  if (e.key === 'Escape' || e.keyCode === 27) {
+    closeSettingsModal();
+  }
 }
 
 function renderCategoryList() {
