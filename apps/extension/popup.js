@@ -18,7 +18,7 @@ const modalClose = document.getElementById('modal-close');
 const categoryList = document.getElementById('category-list');
 const newCategoryName = document.getElementById('new-category-name');
 const btnAddCategory = document.getElementById('btn-add-category');
-const noteAssignment = document.getElementById('note-assignment');
+const notesByCategory = document.getElementById('notes-by-category');
 const renameCategoryModal = document.getElementById('rename-category-modal');
 const renameModalClose = document.getElementById('rename-modal-close');
 const renameCategoryInput = document.getElementById('rename-category-input');
@@ -224,7 +224,6 @@ function renderTabs() {
       const tab = document.createElement('div');
       tab.className = `tab ${noteId === activeTabId ? 'active' : ''}`;
       tab.dataset.id = noteId;
-      tab.draggable = true;
       
       const nameSpan = document.createElement('span');
       nameSpan.className = 'tab-name';
@@ -246,9 +245,6 @@ function renderTabs() {
     });
     
     notesContainer.appendChild(notesRow);
-    
-    // Add drag and drop event listeners for notes
-    setupNoteDragAndDrop();
   } else {
     // Show empty state
     const emptyMsg = document.createElement('div');
@@ -900,7 +896,7 @@ function importNotes(files) {
 function openSettingsModal() {
   settingsModal.classList.add('show');
   renderCategoryList();
-  renderNoteAssignment();
+  renderNotesByCategory();
   loadCurrentWindowSize();
   loadCurrentTheme();
   loadCurrentFontSize();
@@ -1315,89 +1311,183 @@ async function reorderNotes(draggedId, targetId) {
   renderTabs();
 }
 
-function renderNoteAssignment() {
-  noteAssignment.innerHTML = '';
+function renderNotesByCategory() {
+  notesByCategory.innerHTML = '';
   
-  // Group notes by category
-  const notesByCategory = {};
-  for (const catId in categories) {
-    notesByCategory[catId] = [];
-  }
-  if (!notesByCategory['uncategorized']) {
-    notesByCategory['uncategorized'] = [];
-  }
-  
-  // Assign notes to categories
-  for (const noteId in notes) {
-    const catId = notes[noteId].category || 'uncategorized';
-    if (!notesByCategory[catId]) {
-      notesByCategory[catId] = [];
-    }
-    notesByCategory[catId].push({ id: noteId, ...notes[noteId] });
-  }
-  
-  // Render each category as a tree node
-  const catIds = Object.keys(categories).sort();
+  // Get sorted category IDs
+  const catIds = Object.keys(categories).sort((a, b) => {
+    const orderA = categories[a].order !== undefined ? categories[a].order : 999;
+    const orderB = categories[b].order !== undefined ? categories[b].order : 999;
+    if (orderA !== orderB) return orderA - orderB;
+    return a.localeCompare(b);
+  });
   
   catIds.forEach(catId => {
-    const categoryNotes = notesByCategory[catId];
-    if (!categoryNotes || categoryNotes.length === 0) return;
+    // Get notes for this category
+    const categoryNotes = Object.entries(notes)
+      .filter(([id, note]) => note.category === catId)
+      .sort((a, b) => {
+        const orderA = a[1].order !== undefined ? a[1].order : 999;
+        const orderB = b[1].order !== undefined ? b[1].order : 999;
+        if (orderA !== orderB) return orderA - orderB;
+        const numA = parseInt(a[0]) || 0;
+        const numB = parseInt(b[0]) || 0;
+        return numA - numB;
+      });
+    
+    if (categoryNotes.length === 0) return;
+    
+    // Category container
+    const categoryContainer = document.createElement('div');
+    categoryContainer.className = 'category-notes-container';
+    categoryContainer.dataset.categoryId = catId;
     
     // Category header
-    const categoryDiv = document.createElement('div');
-    categoryDiv.className = 'tree-category';
-    
     const categoryHeader = document.createElement('div');
-    categoryHeader.className = 'tree-category-header';
+    categoryHeader.className = 'category-notes-header';
     categoryHeader.textContent = `${categories[catId].name} (${categoryNotes.length})`;
-    categoryDiv.appendChild(categoryHeader);
+    categoryContainer.appendChild(categoryHeader);
     
     // Notes list
     const notesList = document.createElement('div');
-    notesList.className = 'tree-notes-list';
+    notesList.className = 'category-notes-list';
     
-    // Sort notes within category
-    const sortedNotes = categoryNotes.sort((a, b) => {
-      const numA = parseInt(a.id) || 0;
-      const numB = parseInt(b.id) || 0;
+    categoryNotes.forEach(([noteId, note], index) => {
+      const noteItem = document.createElement('div');
+      noteItem.className = 'category-note-item';
+      noteItem.draggable = true;
+      noteItem.dataset.noteId = noteId;
+      
+      // Drag handle
+      const dragHandle = document.createElement('span');
+      dragHandle.className = 'drag-handle';
+      dragHandle.innerHTML = '☰';
+      dragHandle.title = 'Drag to reorder';
+      noteItem.appendChild(dragHandle);
+      
+      // Note name
+      const noteName = document.createElement('span');
+      noteName.className = 'note-name';
+      noteName.textContent = note.title || String(index + 1);
+      noteItem.appendChild(noteName);
+      
+      notesList.appendChild(noteItem);
+    });
+    
+    categoryContainer.appendChild(notesList);
+    notesByCategory.appendChild(categoryContainer);
+    
+    // Add drag and drop event listeners
+    setupCategoryNoteDragAndDrop(catId);
+  });
+}
+
+// Drag and Drop functionality for notes within categories in Settings
+let draggedCategoryNote = null;
+
+function setupCategoryNoteDragAndDrop(categoryId) {
+  const container = document.querySelector(`.category-notes-container[data-category-id="${categoryId}"]`);
+  if (!container) return;
+  
+  const notesList = container.querySelector('.category-notes-list');
+  if (!notesList) return;
+  
+  const noteItems = notesList.querySelectorAll('.category-note-item');
+  
+  noteItems.forEach(item => {
+    item.addEventListener('dragstart', handleCategoryNoteDragStart);
+    item.addEventListener('dragover', handleCategoryNoteDragOver);
+    item.addEventListener('drop', handleCategoryNoteDrop);
+    item.addEventListener('dragend', handleCategoryNoteDragEnd);
+    item.addEventListener('dragenter', handleCategoryNoteDragEnter);
+    item.addEventListener('dragleave', handleCategoryNoteDragLeave);
+  });
+}
+
+function handleCategoryNoteDragStart(e) {
+  draggedCategoryNote = this;
+  this.classList.add('dragging-category-note');
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', this.dataset.noteId);
+  
+  setTimeout(() => {
+    this.style.opacity = '0.5';
+  }, 0);
+}
+
+function handleCategoryNoteDragOver(e) {
+  if (e.preventDefault) {
+    e.preventDefault();
+  }
+  e.dataTransfer.dropEffect = 'move';
+  return false;
+}
+
+function handleCategoryNoteDragEnter(e) {
+  e.preventDefault();
+  if (this !== draggedCategoryNote) {
+    this.classList.add('drag-over-category-note');
+  }
+}
+
+function handleCategoryNoteDragLeave(e) {
+  this.classList.remove('drag-over-category-note');
+}
+
+function handleCategoryNoteDrop(e) {
+  if (e.stopPropagation) {
+    e.stopPropagation();
+  }
+  
+  if (draggedCategoryNote !== this) {
+    const draggedId = draggedCategoryNote.dataset.noteId;
+    const targetId = this.dataset.noteId;
+    const container = this.closest('.category-notes-container');
+    const categoryId = container.dataset.categoryId;
+    
+    reorderNotesInCategory(draggedId, targetId, categoryId);
+  }
+  
+  return false;
+}
+
+function handleCategoryNoteDragEnd(e) {
+  this.classList.remove('dragging-category-note');
+  this.style.opacity = '1';
+  const items = document.querySelectorAll('.category-note-item');
+  items.forEach(item => item.classList.remove('drag-over-category-note'));
+  draggedCategoryNote = null;
+}
+
+async function reorderNotesInCategory(draggedId, targetId, categoryId) {
+  // Get all notes in the category sorted by order
+  const categoryNotes = Object.entries(notes)
+    .filter(([id, note]) => note.category === categoryId)
+    .sort((a, b) => {
+      const orderA = a[1].order !== undefined ? a[1].order : 999;
+      const orderB = b[1].order !== undefined ? b[1].order : 999;
+      if (orderA !== orderB) return orderA - orderB;
+      const numA = parseInt(a[0]) || 0;
+      const numB = parseInt(b[0]) || 0;
       return numA - numB;
     });
-    
-    sortedNotes.forEach((note, index) => {
-      const item = document.createElement('div');
-      item.className = 'tree-note-item';
-      
-      const noteLabel = document.createElement('span');
-      const displayText = note.title || String(index + 1);
-      noteLabel.textContent = displayText;
-      
-      const select = document.createElement('select');
-      select.dataset.noteId = note.id;
-      
-      // Add all categories as options
-      const allCatIds = Object.keys(categories).sort();
-      allCatIds.forEach(optionCatId => {
-        const option = document.createElement('option');
-        option.value = optionCatId;
-        option.textContent = categories[optionCatId].name;
-        if (note.category === optionCatId) {
-          option.selected = true;
-        }
-        select.appendChild(option);
-      });
-      
-      select.addEventListener('change', (e) => {
-        assignNoteToCategory(note.id, e.target.value);
-      });
-      
-      item.appendChild(noteLabel);
-      item.appendChild(select);
-      notesList.appendChild(item);
-    });
-    
-    categoryDiv.appendChild(notesList);
-    noteAssignment.appendChild(categoryDiv);
+  
+  const noteIds = categoryNotes.map(([id]) => id);
+  
+  const draggedIndex = noteIds.indexOf(draggedId);
+  const targetIndex = noteIds.indexOf(targetId);
+  
+  if (draggedIndex === -1 || targetIndex === -1) return;
+  
+  noteIds.splice(draggedIndex, 1);
+  noteIds.splice(targetIndex, 0, draggedId);
+  
+  noteIds.forEach((noteId, index) => {
+    notes[noteId].order = index;
   });
+  
+  await saveNotes();
+  renderNotesByCategory();
 }
 
 async function addCategory() {
@@ -1415,7 +1505,7 @@ async function addCategory() {
   newCategoryName.value = '';
   
   renderCategoryList();
-  renderNoteAssignment();
+  renderNotesByCategory();
   renderTabs(); // Update main interface tabs
 }
 
@@ -1452,7 +1542,7 @@ async function deleteCategory(catId) {
   await saveCategories();
   
   renderCategoryList();
-  renderNoteAssignment();
+  renderNotesByCategory();
   renderTabs();
 }
 
@@ -1489,7 +1579,7 @@ async function confirmRenameCategory() {
   
   closeRenameCategoryModal();
   renderCategoryList();
-  renderNoteAssignment();
+  renderNotesByCategory();
   renderTabs();
 }
 
@@ -1498,7 +1588,7 @@ async function assignNoteToCategory(noteId, catId) {
   await saveNotes();
   
   // Re-render the entire note assignment tree
-  renderNoteAssignment();
+  renderNotesByCategory();
   
   // Also update the main tabs view
   renderTabs();

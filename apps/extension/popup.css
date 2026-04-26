@@ -575,6 +575,78 @@ body {
   background: #c82333;
 }
 
+/* Notes by Category in Settings */
+.category-notes-container {
+  margin-bottom: 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.category-notes-header {
+  padding: 10px 12px;
+  background: linear-gradient(to bottom, #f8f8f8, #e8e8e8);
+  font-size: 13px;
+  font-weight: 600;
+  color: #555;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.category-notes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
+  background: #fff;
+}
+
+.category-note-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  background: #f8f8f8;
+  border-radius: 6px;
+  border: 1px solid #e0e0e0;
+  cursor: grab;
+  transition: all 0.2s ease;
+}
+
+.category-note-item:active {
+  cursor: grabbing;
+}
+
+.category-note-item.dragging-category-note {
+  opacity: 0.5;
+  background: #e3f2fd;
+  border-color: #4a90d9;
+  transform: scale(0.98);
+}
+
+.category-note-item.drag-over-category-note {
+  border-top: 3px solid #17a2b8;
+  background: #e8f4f8;
+}
+
+.category-note-item .drag-handle {
+  cursor: grab;
+  color: #999;
+  font-size: 14px;
+  user-select: none;
+  padding: 0 2px;
+  flex-shrink: 0;
+}
+
+.category-note-item .drag-handle:hover {
+  color: #17a2b8;
+}
+
+.category-note-item .note-name {
+  font-size: 13px;
+  color: #333;
+  flex: 1;
+}
+
 .add-category {
   display: flex;
   gap: 8px;
