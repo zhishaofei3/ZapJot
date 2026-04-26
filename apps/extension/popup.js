@@ -46,7 +46,6 @@ const btnVisitWebsite = document.getElementById('btn-visit-website');
 const btnInsertTime = document.getElementById('btn-insert-time');
 const btnInsertUrl = document.getElementById('btn-insert-url');
 const btnInsertDate = document.getElementById('btn-insert-date');
-const btnInsertDivider = document.getElementById('btn-insert-divider');
 
 // State
 let notes = {};
@@ -1703,27 +1702,7 @@ function insertDateOnly() {
   showPasteNotification('Date inserted');
 }
 
-// Insert divider line
-function insertDivider() {
-  const dividerText = '\n---\n';
-  
-  // Insert at cursor position or at the end
-  const selection = window.getSelection();
-  if (selection.rangeCount > 0) {
-    const range = selection.getRangeAt(0);
-    range.deleteContents();
-    range.insertNode(document.createTextNode(dividerText));
-    range.collapse(false);
-  } else {
-    noteContent.innerHTML += dividerText;
-  }
-  
-  saveCurrentContent();
-  showPasteNotification('Divider inserted');
-}
-
 btnInsertDate.addEventListener('click', insertDateOnly);
-btnInsertDivider.addEventListener('click', insertDivider);
 
 // Theme event listeners
 document.querySelectorAll('.theme-preset').forEach(preset => {

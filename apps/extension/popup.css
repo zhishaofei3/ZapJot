@@ -131,15 +131,6 @@ body {
   background: linear-gradient(to bottom, #e0a800, #d39e00);
 }
 
-.btn-insert-divider {
-  background: linear-gradient(to bottom, #6f42c1, #5a32a3);
-  color: #fff;
-}
-
-.btn-insert-divider:hover {
-  background: linear-gradient(to bottom, #5a32a3, #4e2a8e);
-}
-
 .btn-tab-action:active {
   transform: scale(0.95);
 }
