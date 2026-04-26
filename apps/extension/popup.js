@@ -354,7 +354,21 @@ async function deleteNote(noteId) {
       });
     
     if (remainingNotes.length > 0) {
-      activeTabId = remainingNotes[0][0];
+      // Find the index of the deleted note in the sorted list
+      const deletedIndex = categoryNotes.findIndex(([id]) => id === noteId);
+      
+      // If deleted note was the last one, select the new last note
+      // Otherwise, select the note at the same position (which shifts down)
+      let newIndex;
+      if (deletedIndex >= remainingNotes.length) {
+        // Deleted the last note, select the new last note
+        newIndex = remainingNotes.length - 1;
+      } else {
+        // Select the note at the same position (or first if deleted was first)
+        newIndex = Math.min(deletedIndex, remainingNotes.length - 1);
+      }
+      
+      activeTabId = remainingNotes[newIndex][0];
       await chrome.storage.local.set({ activeTabId: activeTabId });
     } else {
       // No notes in current category, switch to first available
