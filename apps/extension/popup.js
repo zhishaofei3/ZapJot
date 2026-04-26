@@ -2121,8 +2121,6 @@ confirmDeleteModal.addEventListener('click', (e) => {
 });
 
 // Allow Escape key to close confirm dialog and Enter key to confirm
-let isConfirmDialogHandlingKey = false;
-
 document.addEventListener('keydown', (e) => {
   // Handle Confirm Delete Modal
   if (confirmDeleteModal.classList.contains('show')) {
@@ -2130,18 +2128,23 @@ document.addEventListener('keydown', (e) => {
       e.preventDefault();
       e.stopPropagation();
       closeConfirmDialog();
-      isConfirmDialogHandlingKey = true;
-    } else if (e.key === 'Enter' && !isConfirmDialogHandlingKey) {
-      e.preventDefault();
-      e.stopPropagation();
-      executePendingDelete();
-      isConfirmDialogHandlingKey = true;
+    } else if (e.key === 'Enter') {
+      // Only handle Enter if no input field is focused
+      const activeElement = document.activeElement;
+      const isInputFocused = activeElement && (
+        activeElement.tagName === 'INPUT' || 
+        activeElement.tagName === 'TEXTAREA' ||
+        activeElement.isContentEditable
+      );
+      
+      if (!isInputFocused) {
+        e.preventDefault();
+        e.stopPropagation();
+        executePendingDelete();
+      }
     }
     return;
   }
-  
-  // Reset flag when modal is closed
-  isConfirmDialogHandlingKey = false;
 });
 
 // Set title modal event listeners
