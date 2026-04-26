@@ -1582,6 +1582,42 @@ async function deleteCategory(catId) {
       selectedCategory = 'uncategorized';
       await saveCategories();
     }
+    
+    // Select the first note in the new category
+    const categoryNotes = Object.entries(notes)
+      .filter(([id, note]) => note.category === selectedCategory)
+      .sort((a, b) => {
+        const orderA = a[1].order !== undefined ? a[1].order : 999;
+        const orderB = b[1].order !== undefined ? b[1].order : 999;
+        if (orderA !== orderB) return orderA - orderB;
+        const numA = parseInt(a[0]) || 0;
+        const numB = parseInt(b[0]) || 0;
+        return numA - numB;
+      });
+    
+    if (categoryNotes.length > 0) {
+      activeTabId = categoryNotes[0][0];
+      await chrome.storage.local.set({ 
+        activeTabId: activeTabId,
+        selectedCategory: selectedCategory 
+      });
+      
+      // Re-enable text area
+      noteContent.contentEditable = 'true';
+      noteContent.style.opacity = '1';
+      noteContent.style.cursor = '';
+    } else {
+      // No notes in this category, disable text area
+      noteContent.innerHTML = '';
+      noteContent.contentEditable = 'false';
+      noteContent.style.opacity = '0.5';
+      noteContent.style.cursor = 'not-allowed';
+      activeTabId = null;
+      await chrome.storage.local.set({ 
+        activeTabId: null,
+        selectedCategory: selectedCategory 
+      });
+    }
   }
   
   await saveCategories();
