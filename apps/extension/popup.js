@@ -1047,6 +1047,8 @@ function closeSettingsModal() {
 
 function handleSettingsEscapeKey(e) {
   if (e.key === 'Escape' || e.keyCode === 27) {
+    e.preventDefault();
+    e.stopPropagation();
     closeSettingsModal();
   }
 }
