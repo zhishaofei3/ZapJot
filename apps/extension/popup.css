@@ -235,14 +235,16 @@ body {
 }
 
 .tab.dragging-note {
-  opacity: 0.5;
+  opacity: 0.4;
   background: linear-gradient(to bottom, #e3f2fd, #bbdefb);
   border-color: #4a90d9;
+  transform: scale(0.95);
 }
 
 .tab.drag-over-note {
-  border-left: 3px solid #4a90d9;
+  border-left: 4px solid #17a2b8 !important;
   background: linear-gradient(to bottom, #e8f4f8, #d1e7f0);
+  transform: translateX(4px);
 }
 
 /* Notes row within a category */

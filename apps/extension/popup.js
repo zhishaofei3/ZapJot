@@ -1197,6 +1197,15 @@ function setupNoteDragAndDrop() {
   const tabs = tabsContainer.querySelectorAll('.tab');
   
   tabs.forEach(tab => {
+    // Remove existing listeners to prevent duplicates
+    tab.removeEventListener('dragstart', handleNoteDragStart);
+    tab.removeEventListener('dragover', handleNoteDragOver);
+    tab.removeEventListener('drop', handleNoteDrop);
+    tab.removeEventListener('dragend', handleNoteDragEnd);
+    tab.removeEventListener('dragenter', handleNoteDragEnter);
+    tab.removeEventListener('dragleave', handleNoteDragLeave);
+    
+    // Add new listeners
     tab.addEventListener('dragstart', handleNoteDragStart);
     tab.addEventListener('dragover', handleNoteDragOver);
     tab.addEventListener('drop', handleNoteDrop);
@@ -1210,7 +1219,12 @@ function handleNoteDragStart(e) {
   draggedNoteItem = this;
   this.classList.add('dragging-note');
   e.dataTransfer.effectAllowed = 'move';
-  e.dataTransfer.setData('text/html', this.innerHTML);
+  e.dataTransfer.setData('text/plain', this.dataset.id);
+  
+  // Add a slight delay to show the dragging state
+  setTimeout(() => {
+    this.style.opacity = '0.5';
+  }, 0);
 }
 
 function handleNoteDragOver(e) {
@@ -1222,6 +1236,7 @@ function handleNoteDragOver(e) {
 }
 
 function handleNoteDragEnter(e) {
+  e.preventDefault();
   if (this !== draggedNoteItem) {
     this.classList.add('drag-over-note');
   }
@@ -1241,6 +1256,8 @@ function handleNoteDrop(e) {
     const draggedId = draggedNoteItem.dataset.id;
     const targetId = this.dataset.id;
     
+    console.log('Dropping note:', draggedId, 'at position of:', targetId);
+    
     // Reorder notes
     reorderNotes(draggedId, targetId);
   }
@@ -1250,8 +1267,10 @@ function handleNoteDrop(e) {
 
 function handleNoteDragEnd(e) {
   this.classList.remove('dragging-note');
+  this.style.opacity = '1';
   const tabs = document.querySelectorAll('.tab');
   tabs.forEach(tab => tab.classList.remove('drag-over-note'));
+  draggedNoteItem = null;
 }
 
 async function reorderNotes(draggedId, targetId) {
