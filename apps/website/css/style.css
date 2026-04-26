@@ -496,4 +496,26 @@ body {
         width: 32px;
         height: 32px;
     }
+
+    /* Hide navigation links on small screens */
+    .nav-links {
+        display: none;
+    }
+
+    /* Reduce feature card size on small screens */
+    .feature-card {
+        padding: 1.5rem;
+    }
+
+    .feature-icon {
+        font-size: 2.5rem;
+    }
+
+    .feature-card h3 {
+        font-size: 1.3rem;
+    }
+
+    .feature-card p {
+        font-size: 0.95rem;
+    }
 }
