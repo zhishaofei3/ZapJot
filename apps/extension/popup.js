@@ -1349,8 +1349,6 @@ function renderNotesByCategory() {
         return numA - numB;
       });
     
-    if (categoryNotes.length === 0) return;
-    
     // Category container
     const categoryContainer = document.createElement('div');
     categoryContainer.className = 'category-notes-container';
@@ -1366,33 +1364,41 @@ function renderNotesByCategory() {
     const notesList = document.createElement('div');
     notesList.className = 'category-notes-list';
     
-    categoryNotes.forEach(([noteId, note], index) => {
-      const noteItem = document.createElement('div');
-      noteItem.className = 'category-note-item';
-      noteItem.draggable = true;
-      noteItem.dataset.noteId = noteId;
+    if (categoryNotes.length === 0) {
+      // Show empty state
+      const emptyMsg = document.createElement('div');
+      emptyMsg.className = 'empty-category-notes';
+      emptyMsg.textContent = 'No notes in this category';
+      notesList.appendChild(emptyMsg);
+    } else {
+      categoryNotes.forEach(([noteId, note], index) => {
+        const noteItem = document.createElement('div');
+        noteItem.className = 'category-note-item';
+        noteItem.draggable = true;
+        noteItem.dataset.noteId = noteId;
+        
+        // Drag handle
+        const dragHandle = document.createElement('span');
+        dragHandle.className = 'drag-handle';
+        dragHandle.innerHTML = '☰';
+        dragHandle.title = 'Drag to reorder';
+        noteItem.appendChild(dragHandle);
+        
+        // Note name
+        const noteName = document.createElement('span');
+        noteName.className = 'note-name';
+        noteName.textContent = note.title || String(index + 1);
+        noteItem.appendChild(noteName);
+        
+        notesList.appendChild(noteItem);
+      });
       
-      // Drag handle
-      const dragHandle = document.createElement('span');
-      dragHandle.className = 'drag-handle';
-      dragHandle.innerHTML = '☰';
-      dragHandle.title = 'Drag to reorder';
-      noteItem.appendChild(dragHandle);
-      
-      // Note name
-      const noteName = document.createElement('span');
-      noteName.className = 'note-name';
-      noteName.textContent = note.title || String(index + 1);
-      noteItem.appendChild(noteName);
-      
-      notesList.appendChild(noteItem);
-    });
+      // Add drag and drop event listeners
+      setupCategoryNoteDragAndDrop(catId);
+    }
     
     categoryContainer.appendChild(notesList);
     notesByCategory.appendChild(categoryContainer);
-    
-    // Add drag and drop event listeners
-    setupCategoryNoteDragAndDrop(catId);
   });
 }
 
