@@ -471,8 +471,8 @@ body {
     }
 }
 
-@media (max-width: 600px) {
-    /* Hide navigation links at 600px */
+@media (max-width: 690px) {
+    /* Hide navigation links at 690px */
     .nav-links {
         display: none;
     }
