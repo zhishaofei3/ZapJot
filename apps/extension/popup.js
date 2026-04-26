@@ -1679,13 +1679,11 @@ async function insertTabUrl() {
 btnInsertTime.addEventListener('click', insertDateTime);
 btnInsertUrl.addEventListener('click', insertTabUrl);
 
-// Insert current date only (YYYY-MM-DD format)
+// Insert current date only (locale format)
 function insertDateOnly() {
   const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  const dateStr = `${year}-${month}-${day}`;
+  // Use locale-specific date format
+  const dateStr = now.toLocaleDateString();
   
   // Insert at cursor position or at the end
   const selection = window.getSelection();
