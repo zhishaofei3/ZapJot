@@ -317,7 +317,27 @@ function confirmDeleteNote() {
   }
   
   const note = notes[activeTabId];
-  const noteName = note.title || `Note ${activeTabId}`;
+  
+  // Get the display name (same as shown in UI)
+  let noteName;
+  if (note.title) {
+    noteName = note.title;
+  } else {
+    // Calculate the position index within the category
+    const categoryNotes = Object.entries(notes)
+      .filter(([id, n]) => n.category === note.category)
+      .sort((a, b) => {
+        const orderA = a[1].order !== undefined ? a[1].order : 999;
+        const orderB = b[1].order !== undefined ? b[1].order : 999;
+        if (orderA !== orderB) return orderA - orderB;
+        const numA = parseInt(a[0]) || 0;
+        const numB = parseInt(b[0]) || 0;
+        return numA - numB;
+      });
+    
+    const index = categoryNotes.findIndex(([id]) => id === activeTabId);
+    noteName = String(index + 1);
+  }
   
   // Check if note is empty (no content and no title)
   const isEmpty = !note.content && !note.title;
