@@ -312,7 +312,7 @@ async function addTab() {
 // Delete current note
 function confirmDeleteNote() {
   if (!activeTabId || !notes[activeTabId]) {
-    alert('No note selected.');
+    alert('No note selected.\n\nTo delete a category, please click the Settings button.');
     return;
   }
   
