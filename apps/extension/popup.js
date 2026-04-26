@@ -273,7 +273,7 @@ async function switchTab(id) {
 function showTab(id) {
   const tab = notes[id];
   if (tab) {
-    noteContent.innerHTML = tab.content || '';
+    noteContent.value = tab.content || '';
   }
 }
 
@@ -295,7 +295,7 @@ async function addTab() {
   await chrome.storage.local.set({ activeTabId: newId });
 
   // Re-enable text area if it was disabled
-  noteContent.contentEditable = 'true';
+  noteContent.disabled = false;
   noteContent.style.opacity = '1';
   noteContent.style.cursor = '';
 
@@ -392,8 +392,8 @@ async function deleteNote(noteId) {
       await chrome.storage.local.set({ activeTabId: activeTabId });
     } else {
       // No notes in current category, clear and disable text area
-      noteContent.innerHTML = '';
-      noteContent.contentEditable = 'false';
+      noteContent.value = '';
+      noteContent.disabled = true;
       noteContent.style.opacity = '0.5';
       noteContent.style.cursor = 'not-allowed';
       
@@ -468,7 +468,7 @@ async function confirmSetTitle() {
 // Save current textarea content
 async function saveCurrentContent() {
   if (activeTabId && notes[activeTabId]) {
-    const newContent = noteContent.innerHTML;
+    const newContent = noteContent.value;
     
     try {
       // Estimate storage size before saving
@@ -1603,7 +1603,7 @@ async function deleteCategory(catId) {
       selectedCategory = 'uncategorized';
       await saveCategories();
     }
-    
+          
     // Select the first note in the new category
     const categoryNotes = Object.entries(notes)
       .filter(([id, note]) => note.category === selectedCategory)
@@ -1615,22 +1615,22 @@ async function deleteCategory(catId) {
         const numB = parseInt(b[0]) || 0;
         return numA - numB;
       });
-    
+          
     if (categoryNotes.length > 0) {
       activeTabId = categoryNotes[0][0];
       await chrome.storage.local.set({ 
         activeTabId: activeTabId,
         selectedCategory: selectedCategory 
       });
-      
+            
       // Re-enable text area
-      noteContent.contentEditable = 'true';
+      noteContent.disabled = false;
       noteContent.style.opacity = '1';
       noteContent.style.cursor = '';
     } else {
       // No notes in this category, disable text area
-      noteContent.innerHTML = '';
-      noteContent.contentEditable = 'false';
+      noteContent.value = '';
+      noteContent.disabled = true;
       noteContent.style.opacity = '0.5';
       noteContent.style.cursor = 'not-allowed';
       activeTabId = null;
@@ -1715,7 +1715,7 @@ function selectCategory(catId) {
   
   if (categoryNotes.length > 0) {
     // Re-enable text area
-    noteContent.contentEditable = 'true';
+    noteContent.disabled = false;
     noteContent.style.opacity = '1';
     noteContent.style.cursor = '';
     
@@ -1723,8 +1723,8 @@ function selectCategory(catId) {
     switchTab(firstNoteId);
   } else {
     // No notes in this category, clear and disable text area
-    noteContent.innerHTML = '';
-    noteContent.contentEditable = 'false';
+    noteContent.value = '';
+    noteContent.disabled = true;
     noteContent.style.opacity = '0.5';
     noteContent.style.cursor = 'not-allowed';
     activeTabId = null;
@@ -1889,71 +1889,6 @@ noteContent.addEventListener('input', () => {
   saveCurrentContent();
 });
 
-// Handle paste event for images
-noteContent.addEventListener('paste', (e) => {
-  const items = e.clipboardData?.items;
-  if (!items) return;
-  
-  // Check if clipboard contains an image
-  for (let i = 0; i < items.length; i++) {
-    if (items[i].type.indexOf('image') !== -1) {
-      e.preventDefault();
-      
-      const blob = items[i].getAsFile();
-      
-      // Check image size before processing (limit to 2MB per image)
-      const MAX_IMAGE_SIZE = 2 * 1024 * 1024; // 2MB
-      if (blob.size > MAX_IMAGE_SIZE) {
-        alert(`⚠️ Image Too Large!\n\nImage size: ${formatBytes(blob.size)}\nMaximum allowed: ${formatBytes(MAX_IMAGE_SIZE)}\n\nPlease resize the image or take a smaller screenshot.`);
-        return;
-      }
-      
-      const reader = new FileReader();
-      
-      reader.onload = (event) => {
-        const base64Image = event.target.result;
-        
-        // Create image element
-        const img = document.createElement('img');
-        img.src = base64Image;
-        img.style.maxWidth = '100%';
-        img.alt = 'Pasted image';
-        
-        // Insert at cursor position
-        const selection = window.getSelection();
-        if (selection.rangeCount > 0) {
-          const range = selection.getRangeAt(0);
-          range.deleteContents();
-          range.insertNode(img);
-          
-          // Move cursor after the image
-          range.setStartAfter(img);
-          range.setEndAfter(img);
-          selection.removeAllRanges();
-          selection.addRange(range);
-          
-          // Add a line break after image
-          const br = document.createElement('br');
-          range.insertNode(br);
-          range.setStartAfter(br);
-          range.setEndAfter(br);
-          selection.removeAllRanges();
-          selection.addRange(range);
-        }
-        
-        // Save the content
-        saveCurrentContent();
-        
-        // Show notification with image size
-        showPasteNotification(`Image pasted (${formatBytes(blob.size)})`);
-      };
-      
-      reader.readAsDataURL(blob);
-      break;
-    }
-  }
-});
-
 btnExport.addEventListener('click', exportNotes);
 
 btnImport.addEventListener('click', () => {
@@ -1982,15 +1917,13 @@ function insertDateTime() {
   const dateTimeStr = now.toLocaleString();
   
   // Insert at cursor position or at the end
-  const selection = window.getSelection();
-  if (selection.rangeCount > 0) {
-    const range = selection.getRangeAt(0);
-    range.deleteContents();
-    range.insertNode(document.createTextNode(dateTimeStr));
-    range.collapse(false);
-  } else {
-    noteContent.innerHTML += dateTimeStr;
-  }
+  const startPos = noteContent.selectionStart;
+  const endPos = noteContent.selectionEnd;
+  const text = noteContent.value;
+  
+  noteContent.value = text.substring(0, startPos) + dateTimeStr + text.substring(endPos);
+  noteContent.selectionStart = noteContent.selectionEnd = startPos + dateTimeStr.length;
+  noteContent.focus();
   
   saveCurrentContent();
   showPasteNotification('Date & Time inserted');
@@ -2004,15 +1937,13 @@ async function insertTabUrl() {
       const textToInsert = `[${tab.title}](${tab.url})`;
       
       // Insert at cursor position or at the end
-      const selection = window.getSelection();
-      if (selection.rangeCount > 0) {
-        const range = selection.getRangeAt(0);
-        range.deleteContents();
-        range.insertNode(document.createTextNode(textToInsert));
-        range.collapse(false);
-      } else {
-        noteContent.innerHTML += textToInsert;
-      }
+      const startPos = noteContent.selectionStart;
+      const endPos = noteContent.selectionEnd;
+      const text = noteContent.value;
+      
+      noteContent.value = text.substring(0, startPos) + textToInsert + text.substring(endPos);
+      noteContent.selectionStart = noteContent.selectionEnd = startPos + textToInsert.length;
+      noteContent.focus();
       
       saveCurrentContent();
       showPasteNotification('Tab URL inserted');
@@ -2033,15 +1964,13 @@ function insertDateOnly() {
   const dateStr = now.toLocaleDateString();
   
   // Insert at cursor position or at the end
-  const selection = window.getSelection();
-  if (selection.rangeCount > 0) {
-    const range = selection.getRangeAt(0);
-    range.deleteContents();
-    range.insertNode(document.createTextNode(dateStr));
-    range.collapse(false);
-  } else {
-    noteContent.innerHTML += dateStr;
-  }
+  const startPos = noteContent.selectionStart;
+  const endPos = noteContent.selectionEnd;
+  const text = noteContent.value;
+  
+  noteContent.value = text.substring(0, startPos) + dateStr + text.substring(endPos);
+  noteContent.selectionStart = noteContent.selectionEnd = startPos + dateStr.length;
+  noteContent.focus();
   
   saveCurrentContent();
   showPasteNotification('Date inserted');
