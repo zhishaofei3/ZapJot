@@ -479,9 +479,39 @@ body {
   border-radius: 6px;
   border: 1px solid #e0e0e0;
   gap: 8px;
+  cursor: grab;
+  transition: all 0.2s ease;
 }
 
-.category-item span {
+.category-item:active {
+  cursor: grabbing;
+}
+
+.category-item.dragging {
+  opacity: 0.5;
+  background: #e3f2fd;
+  border-color: #4a90d9;
+}
+
+.category-item.drag-over {
+  border-top: 3px solid #4a90d9;
+  background: #e8f4f8;
+}
+
+.drag-handle {
+  cursor: grab;
+  color: #999;
+  font-size: 14px;
+  user-select: none;
+  padding: 0 4px;
+  flex-shrink: 0;
+}
+
+.drag-handle:hover {
+  color: #4a90d9;
+}
+
+.category-name {
   font-size: 13px;
   color: #333;
   flex: 1;

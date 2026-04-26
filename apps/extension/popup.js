@@ -1003,14 +1003,30 @@ function closeSettingsModal() {
 function renderCategoryList() {
   categoryList.innerHTML = '';
   
-  const catIds = Object.keys(categories).sort();
+  // Get sorted category IDs (by order if exists, otherwise alphabetically)
+  const catIds = Object.keys(categories).sort((a, b) => {
+    const orderA = categories[a].order !== undefined ? categories[a].order : 999;
+    const orderB = categories[b].order !== undefined ? categories[b].order : 999;
+    if (orderA !== orderB) return orderA - orderB;
+    return a.localeCompare(b);
+  });
   
   catIds.forEach(catId => {
     const item = document.createElement('div');
     item.className = 'category-item';
+    item.draggable = true;
+    item.dataset.categoryId = catId;
+    
+    // Drag handle
+    const dragHandle = document.createElement('span');
+    dragHandle.className = 'drag-handle';
+    dragHandle.innerHTML = '☰';
+    dragHandle.title = 'Drag to reorder';
+    item.appendChild(dragHandle);
     
     const nameSpan = document.createElement('span');
     nameSpan.textContent = categories[catId].name;
+    nameSpan.className = 'category-name';
     
     item.appendChild(nameSpan);
     
@@ -1061,6 +1077,103 @@ function renderCategoryList() {
     item.appendChild(actionsDiv);
     categoryList.appendChild(item);
   });
+  
+  // Add drag and drop event listeners
+  setupDragAndDrop();
+}
+
+// Drag and Drop functionality for categories
+let draggedItem = null;
+
+function setupDragAndDrop() {
+  const items = categoryList.querySelectorAll('.category-item');
+  
+  items.forEach(item => {
+    item.addEventListener('dragstart', handleDragStart);
+    item.addEventListener('dragover', handleDragOver);
+    item.addEventListener('drop', handleDrop);
+    item.addEventListener('dragend', handleDragEnd);
+    item.addEventListener('dragenter', handleDragEnter);
+    item.addEventListener('dragleave', handleDragLeave);
+  });
+}
+
+function handleDragStart(e) {
+  draggedItem = this;
+  this.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/html', this.innerHTML);
+}
+
+function handleDragOver(e) {
+  if (e.preventDefault) {
+    e.preventDefault();
+  }
+  e.dataTransfer.dropEffect = 'move';
+  return false;
+}
+
+function handleDragEnter(e) {
+  if (this !== draggedItem) {
+    this.classList.add('drag-over');
+  }
+}
+
+function handleDragLeave(e) {
+  this.classList.remove('drag-over');
+}
+
+function handleDrop(e) {
+  if (e.stopPropagation) {
+    e.stopPropagation();
+  }
+  
+  if (draggedItem !== this) {
+    // Get category IDs
+    const draggedId = draggedItem.dataset.categoryId;
+    const targetId = this.dataset.categoryId;
+    
+    // Reorder categories
+    reorderCategories(draggedId, targetId);
+  }
+  
+  return false;
+}
+
+function handleDragEnd(e) {
+  this.classList.remove('dragging');
+  const items = categoryList.querySelectorAll('.category-item');
+  items.forEach(item => item.classList.remove('drag-over'));
+}
+
+async function reorderCategories(draggedId, targetId) {
+  // Get all category IDs in current order
+  const catIds = Object.keys(categories).sort((a, b) => {
+    const orderA = categories[a].order !== undefined ? categories[a].order : 999;
+    const orderB = categories[b].order !== undefined ? categories[b].order : 999;
+    if (orderA !== orderB) return orderA - orderB;
+    return a.localeCompare(b);
+  });
+  
+  // Find indices
+  const draggedIndex = catIds.indexOf(draggedId);
+  const targetIndex = catIds.indexOf(targetId);
+  
+  if (draggedIndex === -1 || targetIndex === -1) return;
+  
+  // Remove dragged item and insert at target position
+  catIds.splice(draggedIndex, 1);
+  catIds.splice(targetIndex, 0, draggedId);
+  
+  // Update order property for all categories
+  catIds.forEach((catId, index) => {
+    categories[catId].order = index;
+  });
+  
+  // Save and re-render
+  await saveCategories();
+  renderCategoryList();
+  renderTabs(); // Update main interface
 }
 
 function renderNoteAssignment() {
@@ -1154,7 +1267,10 @@ async function addCategory() {
   
   // Generate a unique category ID
   const catId = 'cat_' + Date.now();
-  categories[catId] = { name };
+  
+  // Set order to be after all existing categories
+  const maxOrder = Math.max(-1, ...Object.values(categories).map(c => c.order !== undefined ? c.order : -1));
+  categories[catId] = { name, order: maxOrder + 1 };
   
   await saveCategories();
   newCategoryName.value = '';
