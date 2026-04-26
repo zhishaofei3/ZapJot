@@ -448,9 +448,9 @@ body {
         justify-content: center;
     }
 
+    /* Hide navigation links on tablet and smaller screens */
     .nav-links {
-        gap: 1rem;
-        font-size: 0.9rem;
+        display: none;
     }
 
     .section-title {
@@ -495,11 +495,6 @@ body {
     .logo {
         width: 32px;
         height: 32px;
-    }
-
-    /* Hide navigation links on small screens */
-    .nav-links {
-        display: none;
     }
 
     /* Reduce feature card size on small screens */
