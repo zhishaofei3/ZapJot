@@ -45,6 +45,8 @@ const customSizePanel = document.getElementById('custom-size-panel');
 const btnVisitWebsite = document.getElementById('btn-visit-website');
 const btnInsertTime = document.getElementById('btn-insert-time');
 const btnInsertUrl = document.getElementById('btn-insert-url');
+const btnInsertDate = document.getElementById('btn-insert-date');
+const btnInsertDivider = document.getElementById('btn-insert-divider');
 
 // State
 let notes = {};
@@ -1561,6 +1563,51 @@ async function insertTabUrl() {
 
 btnInsertTime.addEventListener('click', insertDateTime);
 btnInsertUrl.addEventListener('click', insertTabUrl);
+
+// Insert current date only (YYYY-MM-DD format)
+function insertDateOnly() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const dateStr = `${year}-${month}-${day}`;
+  
+  // Insert at cursor position or at the end
+  const selection = window.getSelection();
+  if (selection.rangeCount > 0) {
+    const range = selection.getRangeAt(0);
+    range.deleteContents();
+    range.insertNode(document.createTextNode(dateStr));
+    range.collapse(false);
+  } else {
+    noteContent.innerHTML += dateStr;
+  }
+  
+  saveCurrentContent();
+  showPasteNotification('Date inserted');
+}
+
+// Insert divider line
+function insertDivider() {
+  const dividerText = '\n---\n';
+  
+  // Insert at cursor position or at the end
+  const selection = window.getSelection();
+  if (selection.rangeCount > 0) {
+    const range = selection.getRangeAt(0);
+    range.deleteContents();
+    range.insertNode(document.createTextNode(dividerText));
+    range.collapse(false);
+  } else {
+    noteContent.innerHTML += dividerText;
+  }
+  
+  saveCurrentContent();
+  showPasteNotification('Divider inserted');
+}
+
+btnInsertDate.addEventListener('click', insertDateOnly);
+btnInsertDivider.addEventListener('click', insertDivider);
 
 // Theme event listeners
 document.querySelectorAll('.theme-preset').forEach(preset => {
