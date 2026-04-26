@@ -43,6 +43,19 @@ body {
   display: none;
 }
 
+.tab-actions-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.tab-actions-row {
+  display: flex;
+  gap: 4px;
+  justify-content: flex-end;
+}
+
 .tab-actions {
   display: flex;
   gap: 4px;
