@@ -164,63 +164,12 @@ body {
     justify-content: center;
 }
 
-.browser-mockup {
-    background: white;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: var(--shadow-lg);
+.hero-screenshot {
     max-width: 100%;
     width: 500px;
-}
-
-.browser-header {
-    background: #f1f3f4;
-    padding: 10px 15px;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.browser-dots {
-    display: flex;
-    gap: 6px;
-}
-
-.browser-dots span {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: var(--border-color);
-}
-
-.browser-dots span:nth-child(1) {
-    background: #ff5f56;
-}
-
-.browser-dots span:nth-child(2) {
-    background: #ffbd2e;
-}
-
-.browser-dots span:nth-child(3) {
-    background: #27c93f;
-}
-
-.browser-content {
-    padding: 20px;
-    min-height: 300px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--background-light);
-}
-
-.browser-content img {
-    max-width: 100%;
-    border-radius: 5px;
-}
-
-.placeholder-text {
-    color: var(--text-secondary);
-    font-size: 1.1rem;
-    text-align: center;
+    height: auto;
+    border-radius: 10px;
+    box-shadow: var(--shadow-lg);
 }
 
 /* Features Section */
@@ -295,18 +244,20 @@ body {
     text-align: center;
 }
 
-.screenshot-placeholder {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+.screenshot-image {
+    width: 100%;
+    max-width: 400px;
     height: 250px;
+    object-fit: cover;
     border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 1.2rem;
-    font-weight: 600;
     box-shadow: var(--shadow);
     margin-bottom: 1rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.screenshot-image:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
 }
 
 .screenshot-caption {
