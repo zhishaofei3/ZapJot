@@ -430,6 +430,17 @@ body {
   border-bottom: 1px solid #e0e0e0;
 }
 
+.modal-title-with-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.modal-logo {
+  width: 32px;
+  height: 32px;
+}
+
 .modal-header h2 {
   margin: 0;
   font-size: 18px;
