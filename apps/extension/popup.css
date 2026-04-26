@@ -251,6 +251,7 @@ body {
   gap: 6px;
   overflow-x: auto;
   padding: 4px 0;
+  min-height: 44px;
 }
 
 .notes-row::-webkit-scrollbar {
@@ -262,6 +263,9 @@ body {
   color: #999;
   font-style: italic;
   padding: 8px 12px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
 }
 
 
