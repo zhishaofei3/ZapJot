@@ -123,12 +123,12 @@ body {
 }
 
 .btn-insert-date {
-  background: linear-gradient(to bottom, #ffc107, #e0a800);
+  background: linear-gradient(to bottom, #28a745, #218838);
   color: #fff;
 }
 
 .btn-insert-date:hover {
-  background: linear-gradient(to bottom, #e0a800, #d39e00);
+  background: linear-gradient(to bottom, #218838, #1e7e34);
 }
 
 .btn-tab-action:active {
