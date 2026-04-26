@@ -1,0 +1,15 @@
+{
+  "name": "@zapjot/website",
+  "version": "1.0.0",
+  "description": "ZapJot Official Website",
+  "scripts": {
+    "dev": "npx http-server . -p 3000 -o",
+    "build": "echo 'Website is static - no build step needed'"
+  },
+  "keywords": [
+    "website",
+    "landing-page"
+  ],
+  "author": "",
+  "license": "MIT"
+}

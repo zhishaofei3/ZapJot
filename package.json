@@ -1,20 +1,29 @@
 {
-  "name": "quick-notes-extension",
+  "name": "zapjot-monorepo",
   "version": "1.0.0",
-  "description": "A portable notepad with tabs for Chrome",
+  "description": "ZapJot - Lightning-fast notes Chrome Extension and Official Website",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
   "scripts": {
-    "clean": "rm -rf dist && mkdir dist",
-    "package": "npm run clean && cp manifest.json popup.html popup.css popup.js dist/ && cp -r icons dist/ && cd dist && zip -r ../quick-notes-extension.zip .",
-    "dev": "node dev-server.js"
+    "dev:extension": "npm run dev --workspace=@zapjot/extension",
+    "dev:website": "npm run dev --workspace=@zapjot/website",
+    "build:extension": "npm run package --workspace=@zapjot/extension",
+    "build:website": "npm run build --workspace=@zapjot/website",
+    "build": "npm run build:extension && npm run build:website",
+    "deploy:website": "npm run build:website && echo 'Ready for GitHub Pages deployment'"
   },
   "keywords": [
     "chrome-extension",
     "notepad",
-    "popup"
+    "productivity",
+    "notes"
   ],
   "author": "",
   "license": "MIT",
-  "devDependencies": {
-    "chokidar": "^3.5.3"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/ZapJot.git"
   }
 }

@@ -1,0 +1,20 @@
+{
+  "name": "@zapjot/extension",
+  "version": "1.0.0",
+  "description": "ZapJot Chrome Extension - Lightning-fast notes with tabs and categories",
+  "scripts": {
+    "clean": "rm -rf dist && mkdir dist",
+    "package": "npm run clean && cp manifest.json popup.html popup.css popup.js dist/ && cp -r icons dist/ && cd dist && zip -r ../zapjot-extension.zip .",
+    "dev": "node dev-server.js"
+  },
+  "keywords": [
+    "chrome-extension",
+    "notepad",
+    "popup"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "chokidar": "^3.5.3"
+  }
+}

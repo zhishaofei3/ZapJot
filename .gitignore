@@ -23,3 +23,7 @@ npm-debug.log*
 # Environment
 .env
 .env.local
+
+# Monorepo
+apps/*/dist/
+apps/*/*.zip
