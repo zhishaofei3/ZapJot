@@ -91,6 +91,24 @@ body {
   background: linear-gradient(to bottom, #5a6268, #545b62);
 }
 
+.btn-insert-time {
+  background: linear-gradient(to bottom, #17a2b8, #138496);
+  color: #fff;
+}
+
+.btn-insert-time:hover {
+  background: linear-gradient(to bottom, #138496, #117a8b);
+}
+
+.btn-insert-url {
+  background: linear-gradient(to bottom, #28a745, #218838);
+  color: #fff;
+}
+
+.btn-insert-url:hover {
+  background: linear-gradient(to bottom, #218838, #1e7e34);
+}
+
 .btn-tab-action:active {
   transform: scale(0.95);
 }

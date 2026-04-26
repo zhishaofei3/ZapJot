@@ -3,7 +3,7 @@
   "name": "ZapJot",
   "version": "1.0.0",
   "description": "Lightning-fast notes for passwords, tags, and quick captures. Simple, secure, and always ready.",
-  "permissions": ["storage"],
+  "permissions": ["storage", "tabs"],
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
