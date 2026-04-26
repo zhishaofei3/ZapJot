@@ -294,6 +294,11 @@ async function addTab() {
   activeTabId = newId;
   await chrome.storage.local.set({ activeTabId: newId });
 
+  // Re-enable text area if it was disabled
+  noteContent.contentEditable = 'true';
+  noteContent.style.opacity = '1';
+  noteContent.style.cursor = '';
+
   renderTabs();
   showTab(newId);
   noteContent.focus();
@@ -366,21 +371,20 @@ async function deleteNote(noteId) {
       activeTabId = remainingNotes[newIndex][0];
       await chrome.storage.local.set({ activeTabId: activeTabId });
     } else {
-      // No notes in current category, switch to first available note in any category
-      const allNotes = Object.entries(notes);
-      if (allNotes.length > 0) {
-        activeTabId = allNotes[0][0];
-        // Update selected category to match the new active note
-        selectedCategory = notes[activeTabId].category;
-        await chrome.storage.local.set({ 
-          activeTabId: activeTabId,
-          selectedCategory: selectedCategory 
-        });
-      } else {
-        // No notes left at all, create a new default note
-        await addTab();
-        return; // addTab already handles rendering
-      }
+      // No notes in current category, clear and disable text area
+      noteContent.innerHTML = '';
+      noteContent.contentEditable = 'false';
+      noteContent.style.opacity = '0.5';
+      noteContent.style.cursor = 'not-allowed';
+      
+      // Keep the current category selected
+      // Update storage to reflect empty state
+      await chrome.storage.local.set({ 
+        activeTabId: null,
+        selectedCategory: selectedCategory 
+      });
+      
+      activeTabId = null;
     }
   }
   
@@ -1630,14 +1634,29 @@ function selectCategory(catId) {
   const categoryNotes = Object.entries(notes)
     .filter(([id, note]) => note.category === catId)
     .sort((a, b) => {
+      const orderA = a[1].order !== undefined ? a[1].order : 999;
+      const orderB = b[1].order !== undefined ? b[1].order : 999;
+      if (orderA !== orderB) return orderA - orderB;
       const numA = parseInt(a[0]) || 0;
       const numB = parseInt(b[0]) || 0;
       return numA - numB;
     });
   
   if (categoryNotes.length > 0) {
+    // Re-enable text area
+    noteContent.contentEditable = 'true';
+    noteContent.style.opacity = '1';
+    noteContent.style.cursor = '';
+    
     const firstNoteId = categoryNotes[0][0];
     switchTab(firstNoteId);
+  } else {
+    // No notes in this category, clear and disable text area
+    noteContent.innerHTML = '';
+    noteContent.contentEditable = 'false';
+    noteContent.style.opacity = '0.5';
+    noteContent.style.cursor = 'not-allowed';
+    activeTabId = null;
   }
 }
 
