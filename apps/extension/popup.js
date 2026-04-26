@@ -257,14 +257,14 @@ function renderTabs() {
 }
 
 // Switch to a tab
-function switchTab(id) {
+async function switchTab(id) {
   if (id === activeTabId) return;
 
   // Save current content before switching
-  saveCurrentContent();
+  await saveCurrentContent();
 
   activeTabId = id;
-  chrome.storage.local.set({ activeTabId: id });
+  await chrome.storage.local.set({ activeTabId: id });
   renderTabs();
   showTab(id);
 }
@@ -446,12 +446,13 @@ async function confirmSetTitle() {
 }
 
 // Save current textarea content
-function saveCurrentContent() {
+async function saveCurrentContent() {
   if (activeTabId && notes[activeTabId]) {
     const newContent = noteContent.innerHTML;
     
-    // Estimate storage size before saving
-    estimateStorageSize().then(usage => {
+    try {
+      // Estimate storage size before saving
+      const usage = await estimateStorageSize();
       const contentSize = new Blob([newContent]).size;
       const estimatedTotal = usage + contentSize;
       
@@ -471,13 +472,13 @@ function saveCurrentContent() {
       
       // Proceed with save
       notes[activeTabId].content = newContent;
-      saveNotes();
-    }).catch(error => {
+      await saveNotes();
+    } catch (error) {
       console.error('Error estimating storage size:', error);
       // Still try to save even if estimation fails
       notes[activeTabId].content = newContent;
-      saveNotes();
-    });
+      await saveNotes();
+    }
   }
 }
 
