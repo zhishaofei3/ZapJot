@@ -227,6 +227,26 @@ body {
   white-space: nowrap;
 }
 
+.tab {
+  cursor: grab;
+  transition: all 0.2s ease;
+}
+
+.tab:active {
+  cursor: grabbing;
+}
+
+.tab.dragging-note {
+  opacity: 0.5;
+  background: linear-gradient(to bottom, #e3f2fd, #bbdefb);
+  border-color: #4a90d9;
+}
+
+.tab.drag-over-note {
+  border-left: 3px solid #4a90d9;
+  background: linear-gradient(to bottom, #e8f4f8, #d1e7f0);
+}
+
 /* Notes row within a category */
 .notes-row {
   display: flex;

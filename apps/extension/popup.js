@@ -206,6 +206,10 @@ function renderTabs() {
   const categoryNotes = Object.entries(notes)
     .filter(([id, note]) => note.category === selectedCategory)
     .sort((a, b) => {
+      // Sort by order if exists, otherwise by ID
+      const orderA = a[1].order !== undefined ? a[1].order : 999;
+      const orderB = b[1].order !== undefined ? b[1].order : 999;
+      if (orderA !== orderB) return orderA - orderB;
       const numA = parseInt(a[0]) || 0;
       const numB = parseInt(b[0]) || 0;
       return numA - numB;
@@ -220,6 +224,7 @@ function renderTabs() {
       const tab = document.createElement('div');
       tab.className = `tab ${noteId === activeTabId ? 'active' : ''}`;
       tab.dataset.id = noteId;
+      tab.draggable = true;
       
       const nameSpan = document.createElement('span');
       nameSpan.className = 'tab-name';
@@ -241,6 +246,9 @@ function renderTabs() {
     });
     
     notesContainer.appendChild(notesRow);
+    
+    // Add drag and drop event listeners for notes
+    setupNoteDragAndDrop();
   } else {
     // Show empty state
     const emptyMsg = document.createElement('div');
@@ -279,8 +287,12 @@ async function addTab() {
   const newId = String(Math.max(...tabIds, 0) + 1);
   const newName = String(parseInt(newId));
 
+  // Set order to be after all existing notes in this category
+  const categoryNotes = Object.values(notes).filter(note => note.category === selectedCategory);
+  const maxOrder = Math.max(-1, ...categoryNotes.map(note => note.order !== undefined ? note.order : -1));
+  
   // Use the currently selected category
-  notes[newId] = { name: newName, content: '', category: selectedCategory };
+  notes[newId] = { name: newName, content: '', category: selectedCategory, order: maxOrder + 1 };
   await saveNotes();
 
   activeTabId = newId;
@@ -1173,6 +1185,108 @@ async function reorderCategories(draggedId, targetId) {
   await saveCategories();
   renderCategoryList();
   renderTabs(); // Update main interface
+}
+
+// Drag and Drop functionality for notes
+let draggedNoteItem = null;
+
+function setupNoteDragAndDrop() {
+  const tabsContainer = document.querySelector('.notes-row');
+  if (!tabsContainer) return;
+  
+  const tabs = tabsContainer.querySelectorAll('.tab');
+  
+  tabs.forEach(tab => {
+    tab.addEventListener('dragstart', handleNoteDragStart);
+    tab.addEventListener('dragover', handleNoteDragOver);
+    tab.addEventListener('drop', handleNoteDrop);
+    tab.addEventListener('dragend', handleNoteDragEnd);
+    tab.addEventListener('dragenter', handleNoteDragEnter);
+    tab.addEventListener('dragleave', handleNoteDragLeave);
+  });
+}
+
+function handleNoteDragStart(e) {
+  draggedNoteItem = this;
+  this.classList.add('dragging-note');
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/html', this.innerHTML);
+}
+
+function handleNoteDragOver(e) {
+  if (e.preventDefault) {
+    e.preventDefault();
+  }
+  e.dataTransfer.dropEffect = 'move';
+  return false;
+}
+
+function handleNoteDragEnter(e) {
+  if (this !== draggedNoteItem) {
+    this.classList.add('drag-over-note');
+  }
+}
+
+function handleNoteDragLeave(e) {
+  this.classList.remove('drag-over-note');
+}
+
+function handleNoteDrop(e) {
+  if (e.stopPropagation) {
+    e.stopPropagation();
+  }
+  
+  if (draggedNoteItem !== this) {
+    // Get note IDs
+    const draggedId = draggedNoteItem.dataset.id;
+    const targetId = this.dataset.id;
+    
+    // Reorder notes
+    reorderNotes(draggedId, targetId);
+  }
+  
+  return false;
+}
+
+function handleNoteDragEnd(e) {
+  this.classList.remove('dragging-note');
+  const tabs = document.querySelectorAll('.tab');
+  tabs.forEach(tab => tab.classList.remove('drag-over-note'));
+}
+
+async function reorderNotes(draggedId, targetId) {
+  // Get all notes in current category sorted by order
+  const categoryNotes = Object.entries(notes)
+    .filter(([id, note]) => note.category === selectedCategory)
+    .sort((a, b) => {
+      const orderA = a[1].order !== undefined ? a[1].order : 999;
+      const orderB = b[1].order !== undefined ? b[1].order : 999;
+      if (orderA !== orderB) return orderA - orderB;
+      const numA = parseInt(a[0]) || 0;
+      const numB = parseInt(b[0]) || 0;
+      return numA - numB;
+    });
+  
+  const noteIds = categoryNotes.map(([id]) => id);
+  
+  // Find indices
+  const draggedIndex = noteIds.indexOf(draggedId);
+  const targetIndex = noteIds.indexOf(targetId);
+  
+  if (draggedIndex === -1 || targetIndex === -1) return;
+  
+  // Remove dragged item and insert at target position
+  noteIds.splice(draggedIndex, 1);
+  noteIds.splice(targetIndex, 0, draggedId);
+  
+  // Update order property for all notes in this category
+  noteIds.forEach((noteId, index) => {
+    notes[noteId].order = index;
+  });
+  
+  // Save and re-render
+  await saveNotes();
+  renderTabs();
 }
 
 function renderNoteAssignment() {
