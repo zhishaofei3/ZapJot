@@ -4,7 +4,7 @@
   "description": "ZapJot Chrome Extension - Lightning-fast notes with tabs and categories",
   "scripts": {
     "clean": "rm -rf dist && mkdir dist",
-    "package": "npm run clean && cp manifest.json popup.html popup.css popup.js dist/ && cp -r icons dist/ && cd dist && zip -r ../zapjot-extension.zip .",
+    "package": "npm run clean && mkdir -p release && cp manifest.json popup.html popup.css popup.js dist/ && cp -r icons dist/ && cd dist && zip -r ../release/zapjot-extension.zip .",
     "dev": "node dev-server.js"
   },
   "keywords": [
