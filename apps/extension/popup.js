@@ -42,6 +42,7 @@ const btnApplyCustomSize = document.getElementById('btn-apply-custom-size');
 const sizePresets = document.querySelectorAll('.btn-size-preset');
 const btnCustomToggle = document.getElementById('btn-custom-toggle');
 const customSizePanel = document.getElementById('custom-size-panel');
+const btnVisitWebsite = document.getElementById('btn-visit-website');
 
 // State
 let notes = {};
@@ -1502,6 +1503,11 @@ fileInput.addEventListener('change', (e) => {
 btnSettings.addEventListener('click', openSettingsModal);
 modalClose.addEventListener('click', closeSettingsModal);
 btnAddCategory.addEventListener('click', addCategory);
+
+// Visit website button
+btnVisitWebsite.addEventListener('click', () => {
+  window.open('https://zhishaofei3.github.io/ZapJot/', '_blank');
+});
 
 // Theme event listeners
 document.querySelectorAll('.theme-preset').forEach(preset => {

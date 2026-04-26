@@ -942,3 +942,19 @@ body {
 .custom-tooltip.show {
   opacity: 1;
 }
+
+/* About section and website button */
+.about-section {
+  display: flex;
+  justify-content: center;
+}
+
+.btn-website {
+  background: linear-gradient(to bottom, #667eea, #764ba2) !important;
+  border-color: #667eea !important;
+  width: 100%;
+}
+
+.btn-website:hover {
+  background: linear-gradient(to bottom, #5568d3, #653e8f) !important;
+}
