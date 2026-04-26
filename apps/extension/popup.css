@@ -175,10 +175,10 @@ body {
 }
 
 .category-btn.selected {
-  background: linear-gradient(to bottom, #e8a84c, #d4953a);
-  border-color: #c88730;
+  background: linear-gradient(to bottom, #28a745, #218838);
+  border-color: #1e7e34;
   color: #fff;
-  box-shadow: 0 2px 4px rgba(232, 168, 76, 0.3);
+  box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
 }
 
 /* Notes container */
@@ -214,8 +214,8 @@ body {
 }
 
 .tab.active {
-  background: linear-gradient(to bottom, #e8a84c, #d4953a);
-  border-color: #c88730;
+  background: linear-gradient(to bottom, #28a745, #218838);
+  border-color: #1e7e34;
   color: #fff;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
 }
