@@ -654,6 +654,47 @@ body {
   flex: 1;
 }
 
+.btn-edit-note {
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 4px;
+  background: #4a90d9;
+  color: #fff;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.btn-edit-note:hover {
+  background: #3d7fc4;
+}
+
+.btn-delete-note-setting {
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 4px;
+  background: #dc3545;
+  color: #fff;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.btn-delete-note-setting:hover {
+  background: #c82333;
+}
+
 .empty-category-notes {
   padding: 12px;
   text-align: center;

@@ -420,6 +420,87 @@ function scrollToNote(noteId) {
   }
 }
 
+// Confirm delete note from Settings panel
+function confirmDeleteNoteInSettings(noteId) {
+  if (!notes[noteId]) return;
+  
+  const note = notes[noteId];
+  
+  // Get the display name
+  let noteName = note.title || note.name;
+  
+  // Check if note is empty
+  const isEmpty = !note.content && !note.title;
+  
+  if (isEmpty) {
+    // Directly delete empty notes without confirmation
+    deleteNoteFromSettings(noteId);
+  } else {
+    // Show confirmation dialog for non-empty notes
+    const message = `Are you sure you want to delete "${noteName}"?\n\nThis action cannot be undone.`;
+    showConfirmDialog(message, () => deleteNoteFromSettings(noteId));
+  }
+}
+
+async function deleteNoteFromSettings(noteId) {
+  const noteCategory = notes[noteId].category;
+  
+  // Get notes in the category before deletion
+  const categoryNotesBefore = Object.entries(notes)
+    .filter(([id, note]) => note.category === noteCategory);
+  
+  delete notes[noteId];
+  await saveNotes();
+  
+  // If we deleted the active tab, switch to another note
+  if (activeTabId === noteId) {
+    const remainingNotes = Object.entries(notes)
+      .filter(([id, note]) => note.category === noteCategory)
+      .sort((a, b) => {
+        const orderA = a[1].order !== undefined ? a[1].order : 999;
+        const orderB = b[1].order !== undefined ? b[1].order : 999;
+        if (orderA !== orderB) return orderA - orderB;
+        const numA = parseInt(a[0]) || 0;
+        const numB = parseInt(b[0]) || 0;
+        return numA - numB;
+      });
+    
+    if (remainingNotes.length > 0) {
+      // Find the index of the deleted note in the sorted list
+      const deletedIndex = categoryNotesBefore.findIndex(([id]) => id === noteId);
+      
+      let newIndex;
+      if (deletedIndex >= remainingNotes.length) {
+        newIndex = remainingNotes.length - 1;
+      } else {
+        newIndex = Math.min(deletedIndex, remainingNotes.length - 1);
+      }
+      
+      activeTabId = remainingNotes[newIndex][0];
+      await chrome.storage.local.set({ activeTabId: activeTabId });
+      
+      // Re-enable text area
+      noteContent.disabled = false;
+      noteContent.style.opacity = '1';
+      noteContent.style.cursor = '';
+      noteContent.value = notes[activeTabId].content || '';
+    } else {
+      // No notes in this category, disable text area
+      noteContent.value = '';
+      noteContent.disabled = true;
+      noteContent.style.opacity = '0.5';
+      noteContent.style.cursor = 'not-allowed';
+      activeTabId = null;
+      await chrome.storage.local.set({ activeTabId: null });
+    }
+  }
+  
+  // Update both settings panel and main interface
+  renderNotesByCategory();
+  renderTabs();
+  showTab(activeTabId);
+}
+
 
 // Rename a tab (legacy function, now uses setTitle)
 async function renameTab(id) {
@@ -1436,6 +1517,35 @@ function renderNotesByCategory() {
         noteName.textContent = note.title || note.name;
         noteItem.appendChild(noteName);
         
+        // Action buttons container
+        const actionsDiv = document.createElement('div');
+        actionsDiv.style.display = 'flex';
+        actionsDiv.style.gap = '6px';
+        actionsDiv.style.flexShrink = '0';
+        
+        // Edit button
+        const editBtn = document.createElement('button');
+        editBtn.className = 'btn-edit-note';
+        editBtn.innerHTML = '✎';
+        editBtn.title = 'Rename note';
+        editBtn.addEventListener('click', (e) => {
+          e.stopPropagation(); // Prevent drag start
+          openSetTitleModal(noteId);
+        });
+        actionsDiv.appendChild(editBtn);
+        
+        // Delete button
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'btn-delete-note-setting';
+        deleteBtn.innerHTML = '×';
+        deleteBtn.title = 'Delete note';
+        deleteBtn.addEventListener('click', (e) => {
+          e.stopPropagation(); // Prevent drag start
+          confirmDeleteNoteInSettings(noteId);
+        });
+        actionsDiv.appendChild(deleteBtn);
+        
+        noteItem.appendChild(actionsDiv);
         notesList.appendChild(noteItem);
       });
     }
