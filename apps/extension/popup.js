@@ -227,8 +227,8 @@ function renderTabs() {
       
       const nameSpan = document.createElement('span');
       nameSpan.className = 'tab-name';
-      // Display custom title if set, otherwise display sequential number
-      nameSpan.textContent = note.title || String(index + 1);
+      // Display custom title if set, otherwise display the fixed note name
+      nameSpan.textContent = note.title || note.name;
       
       tab.appendChild(nameSpan);
       
@@ -1433,18 +1433,20 @@ function renderNotesByCategory() {
         // Note name
         const noteName = document.createElement('span');
         noteName.className = 'note-name';
-        noteName.textContent = note.title || String(index + 1);
+        noteName.textContent = note.title || note.name;
         noteItem.appendChild(noteName);
         
         notesList.appendChild(noteItem);
       });
-      
-      // Add drag and drop event listeners
-      setupCategoryNoteDragAndDrop(catId);
     }
     
     categoryContainer.appendChild(notesList);
     notesByCategory.appendChild(categoryContainer);
+    
+    // Add drag and drop event listeners AFTER appending to DOM
+    if (categoryNotes.length > 0) {
+      setupCategoryNoteDragAndDrop(catId);
+    }
   });
 }
 
@@ -1554,6 +1556,7 @@ async function reorderNotesInCategory(draggedId, targetId, categoryId) {
   
   await saveNotes();
   renderNotesByCategory();
+  renderTabs(); // Update main interface tabs
 }
 
 async function addCategory() {
